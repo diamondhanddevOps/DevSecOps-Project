@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Deploy To Kubernetes') {
+            steps {
+                script {
+                    withKubeConfig(
+                        credentialsId: 'k8-token',
+                        serverUrl: 'https://1D77F96ADAC7ACD946F5F91341AF536C.gr7.us-east-1.eks.amazonaws.com',
+                        clusterName: 'Netflix-EKS',
+                        namespace: 'webapps'
+                    ) {
+                        sh "kubectl apply -f deployment-service.yml"
+                        sleep 60
+                    }
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    withKubeConfig(
+                        credentialsId: 'k8-token',
+                        serverUrl: 'https://1D77F96ADAC7ACD946F5F91341AF536C.gr7.us-east-1.eks.amazonaws.com',
+                        clusterName: 'Netflix-EKS',
+                        namespace: 'webapps'
+                    ) {
+                        sh "kubectl get svc -n webapps"
+                    }
+                }
+            }
+        }
+    }
+}
